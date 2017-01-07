@@ -86,7 +86,7 @@ class dnbradio(object):
         self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
         self.driver.get(self.url)
 
-        sleep(1)
+        sleep(5)
 
         return
 
@@ -213,6 +213,127 @@ class dnbradio(object):
         self.goto_latest_show()
 
         self.bbc_code()
+
+        self.shutdown()
+
+        return
+
+class dnbforum(object):
+
+    def __init__(self, login_pass, bbc_code):
+        '''
+        INPUT
+            login_pass - username and password, DICT
+            bbc_code - BBC code from DNBRadio, STR
+        '''
+        self.user = login_pass.keys()[0]
+        self.password = login_pass.values()[0]
+        self.bbc = bbc_code
+        self.url = 'https://dnbforum.com/threads/ritchey-coffee-bass-live-on-dnbradio.185748/'
+
+    def launch(self):
+        '''
+        Launch Chrome webdriver
+        '''
+        self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
+        self.driver.get(self.url)
+
+        sleep(5)
+
+        return
+
+    def login(self):
+        '''
+        Log into dnbforum
+        '''
+        self.driver \
+            .find_element_by_xpath("//a[@href='login/']") \
+            .click()
+
+        self.driver \
+            .find_element_by_xpath("//input[@name='login']") \
+            .send_keys(self.user)
+
+        self.driver \
+            .find_element_by_xpath("//input[@name='password']") \
+            .send_keys(self.password)
+
+        return
+
+    def find_last_page(self):
+        '''
+        Determine the last page of posts
+        '''
+        self.last_page = self.driver \
+                             .find_element_by_class_name('PageNav') \
+                             .get_attribute('data-last')
+
+        return
+
+    def goto_last_page(self):
+        '''
+        Go to last page of posts
+        '''
+        self.find_last_page()
+
+        xpath_str = "//nav/a[contains(text()," + self.last_page + ")]"
+
+        self.driver \
+            .find_element_by_xpath(xpath_str) \
+            .click()
+
+        return
+
+    def enter_bbc_code(self):
+        '''
+        Select iframe and enter BBC code for show
+        '''
+        frame = self.driver \
+                    .find_element_by_tag_name('iframe')
+
+        self.driver \
+            .switch_to_frame(frame)
+
+        self.driver \
+            .find_element_by_xpath('//body') \
+            .send_keys(self.bbc)
+
+        self.driver \
+            .switch_to_default_content()
+
+        return
+
+    def submit_reply(self):
+        '''
+        Submit post to forum thread
+        '''
+        self.driver \
+            .find_element_by_xpath("//input[@value='Post Reply']") \
+            .click()
+
+        return
+
+    def shutdown(self):
+        '''
+        Close Chrome webdriver
+        '''
+        self.driver.close()
+
+        return
+
+    def post_reply(self):
+        '''
+        Post show to forum
+        '''
+        self.launch()
+
+        self.login()
+
+        self.goto_last_page()
+
+        self.enter_bbc_code()
+
+        self.submit_reply()
 
         self.shutdown()
 

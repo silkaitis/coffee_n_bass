@@ -20,6 +20,9 @@ INPUT
                         dogsonacid
     my_latest_show.m3u8 - Track list exported from Rekordbox, M3U8
     ~/Users/jdoe/Pictures/my_show_picture.jpg - Image, JPG
+
+OUTPUT
+    None
 '''
 
 if __name__ == '__main__':
