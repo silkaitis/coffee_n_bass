@@ -36,7 +36,6 @@ if __name__ == '__main__':
     Update DNBRadio
     '''
     dnbr = dnbradio(dnb_keys.dnbradio, tracks.build())
-    import pdb; pdb.set_trace()
     dnbr.update_show()
 
     '''
