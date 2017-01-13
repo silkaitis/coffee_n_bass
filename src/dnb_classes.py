@@ -38,7 +38,7 @@ class tracklister(object):
         for track in self.lines:
             if track[0:7] == '#EXTINF':
                 pos = track.find(',') + 1
-                soln.append(track[pos:-1])
+                soln.append(track[pos:])
 
         soln = self.strip_last_return(soln)
 
@@ -48,7 +48,7 @@ class tracklister(object):
         '''
         Remove the carriage return from last track
         '''
-        tracks[-1] = tracks[-1].strip('\r')
+        tracks[-1] = tracks[-1].strip('\r\n')
 
         return(tracks)
 
@@ -317,6 +317,8 @@ class dnbforum(object):
             .find_element_by_xpath("//input[@value='Post Reply']") \
             .click()
 
+        sleep(5)
+
         return
 
     def shutdown(self):
@@ -434,6 +436,8 @@ class dogsonacid(object):
         self.driver \
             .switch_to_default_content()
 
+        sleep(1)
+
         return
 
     def submit_reply(self):
@@ -443,6 +447,8 @@ class dogsonacid(object):
         self.driver \
             .find_element_by_xpath("//input[@value='Post Reply']") \
             .click()
+
+        sleep(5)
 
         return
 
