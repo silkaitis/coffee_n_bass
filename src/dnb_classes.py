@@ -72,7 +72,7 @@ class dnbradio(object):
         '''
         INPUT
             login_pass - username and password, DICT
-            raw_playlist - playlist exported from Rekordbox, LIST
+            trk_list - playlist exported from Rekordbox, LIST
         '''
         self.user = login_pass.keys()[0]
         self.password = login_pass.values()[0]
@@ -530,6 +530,7 @@ class site_keys(object):
 
         self.doa = {self.raw_keys['doa_usr'] : self.raw_keys['doa_pswd']}
 
+        self.mixcloud = {self.raw_keys['mcloud_usr'] : self.raw_keys['mcloud_pswd']}
         return
 
     def build(self):
@@ -539,5 +540,209 @@ class site_keys(object):
         self.load_keys()
 
         self.redefine()
+
+        return
+
+class mixcloud(object):
+    """
+    Class to login and publish show to mixcloud
+
+    Note: Sleep is incorporated into appropriate functions to ensure
+            the page is fully loaded before proceeding.
+    """
+    def __init__(self, login_pass, trk_list, filename):
+        '''
+        INPUT
+            login_pass - username and password, DICT
+            raw_playlist - playlist exported from Rekordbox, LIST
+        '''
+        self.user = login_pass.keys()[0]
+        self.password = login_pass.values()[0]
+        self.track_list = trk_list
+        self.show_filename = filename
+        self.url = 'http://www.mixcloud.com/'
+
+    def launch(self):
+        '''
+        Launch Chrome webdriver
+        '''
+        self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
+        self.driver.get(self.url)
+
+        sleep(5)
+
+        return
+
+    def login(self):
+        '''
+        Log into dnbradio
+        '''
+        self.driver \
+            .find_element_by_xpath('''//div[@class='user-actions']/a[contains(text(),'Log in')]''') \
+            .click()
+
+        self.driver \
+            .find_element_by_xpath('''//input[@ng-model='formData.email']''') \
+            .send_keys(self.user)
+
+        self.driver \
+            .find_element_by_xpath('''//input[@type='password']''') \
+            .send_keys(self.password)
+
+        self.driver \
+            .find_element_by_xpath('''//button[@class='btn btn-big btn-secondary']''') \
+            .click()
+
+        return
+
+    def goto_upload_page(self):
+        '''
+        Go to upload page
+        '''
+        self.driver \
+            .find_element_by_xpath('''//a[@href='/upload/']''') \
+            .click()
+
+        sleep(1)
+        return
+
+    def select_file(self):
+        '''
+        Select file to upload
+        '''
+        loc = '/Users/danius/Downloads' + self.show_filename
+
+        self.driver \
+            .find_element_by_xpath('''//input[@type='file']''') \
+            .send_keys(loc)
+
+        return
+
+    def enter_show_name(self):
+        '''
+        Enter show name
+        '''
+        title = self.show_filename.split('_-_')[-1].replace('.mp3', '')
+
+        self.driver \
+            .find_element_by_xpath('''//input[@id='cloudcast-name']''') \
+            .send_keys(title)
+
+        return
+
+    def upload(self):
+        '''
+        Upload file
+        '''
+        self.driver \
+            .find_element_by_xpath('''//div[@m-click='upload.submit()']''') \
+            .click()
+
+        #Waiting long enough to ensure the file uploaded
+        sleep(10 * 60)
+
+        return
+        
+    def enter_track_list(self):
+        '''
+        Enter track list into text box
+        '''
+        self.driver \
+            .find_element_by_name('frm_tracklist') \
+            .send_keys(self.track_list)
+
+        return
+
+    def enter_show_image(self):
+        '''
+        Enter path for show's image
+        '''
+        self.driver \
+            .find_element_by_name('frm_picture') \
+            .send_keys('/Users/danius/Documents/ritchey_cover_05_-_small_4.jpg')
+
+        return
+
+    def save_edits(self):
+        '''
+        Save edits made to show page
+        '''
+        self.driver \
+            .find_element_by_xpath("//input[@value='Save']") \
+            .click()
+
+        sleep(5)
+        return
+
+    def bbc_code(self):
+        '''
+        Save the generated BBC code
+        '''
+        self.bbc = self.driver \
+                        .find_element_by_xpath("//textarea") \
+                        .text
+
+        return
+
+    def fetch_filename(self):
+        '''
+        Store show file name
+        '''
+        self.show_filename = self.driver \
+                                 .find_element_by_xpath('//a[contains(text(),"Download this mix")]') \
+                                 .get_attribute('href') \
+                                 .split('livesets/')[1]
+
+        return
+
+    def download_show(self):
+        '''
+        Download the show
+        '''
+        self.driver \
+            .find_element_by_xpath('//a[contains(text(),"Download this mix")]') \
+            .click()
+
+        return
+
+    def shutdown(self):
+        '''
+        Close Chrome webdriver
+        '''
+        self.driver.close()
+
+        return
+
+    def update_show(self):
+        '''
+        Update show with track list and image
+        '''
+        self.launch()
+
+        self.login()
+
+        self.goto_archive()
+
+        self.goto_latest_show()
+
+        self.goto_edit_page()
+
+        self.enter_track_list()
+
+        self.enter_show_image()
+
+        self.save_edits()
+
+        self.goto_archive()
+
+        self.goto_latest_show()
+
+        self.download_show()
+
+        self.fetch_filename()
+
+        self.bbc_code()
+
+        self.shutdown()
 
         return
