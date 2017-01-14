@@ -180,6 +180,27 @@ class dnbradio(object):
 
         return
 
+    def fetch_filename(self):
+        '''
+        Store show file name
+        '''
+        self.show_filename = self.driver \
+                                 .find_element_by_xpath('//a[contains(text(),"Download this mix")]') \
+                                 .get_attribute('href') \
+                                 .split('livesets/')[1]
+
+        return
+
+    def download_show(self):
+        '''
+        Download the show
+        '''
+        self.driver \
+            .find_element_by_xpath('//a[contains(text(),"Download this mix")]') \
+            .click()
+
+        return
+
     def shutdown(self):
         '''
         Close Chrome webdriver
@@ -211,6 +232,10 @@ class dnbradio(object):
         self.goto_archive()
 
         self.goto_latest_show()
+
+        self.download_show()
+
+        self.fetch_filename()
 
         self.bbc_code()
 
