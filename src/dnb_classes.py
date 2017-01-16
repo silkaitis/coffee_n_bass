@@ -210,7 +210,7 @@ class dnbradio(object):
 
         return
 
-    def update_show(self):
+    def publish(self):
         '''
         Update show with track list and image
         '''
@@ -355,7 +355,7 @@ class dnbforum(object):
 
         return
 
-    def post_reply(self):
+    def publish(self):
         '''
         Post show to forum
         '''
@@ -486,7 +486,7 @@ class dogsonacid(object):
 
         return
 
-    def post_reply(self):
+    def publish(self):
         '''
         Post show to forum
         '''
