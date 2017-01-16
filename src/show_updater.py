@@ -1,7 +1,7 @@
 import sys
 import yaml
 
-from dnb_classes import tracklister, dnbradio, dnbforum, dogsonacid, site_keys
+from dnb_classes import tracklister, dnbradio, dnbforum, dogsonacid, site_keys, mixcloud
 from time import sleep
 
 '''
@@ -36,16 +36,24 @@ if __name__ == '__main__':
     Update DNBRadio
     '''
     dnbr = dnbradio(dnb_keys.dnbradio, tracks.build())
-    dnbr.update_show()
+    dnbr.publish()
 
     '''
     Post to DNBForum
     '''
     dnbf = dnbforum(dnb_keys.dnbforum, dnbr.bbc)
-    dnbf.post_reply()
+    dnbf.publish()
 
     '''
     Post to dogsonacid
     '''
     doa = dogsonacid(dnb_keys.doa, dnbr.bbc)
-    doa.post_reply()
+    doa.publish()
+
+    '''
+    Post to mixcloud
+    '''
+    mxcld = mixcloud(dnb_keys.mixcloud, tracks.build(), dnbr.show_filename)
+    mxcld.publish()
+
+    print(dnbr.show_filename + 'successfully published.')
