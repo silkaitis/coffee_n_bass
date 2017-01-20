@@ -200,6 +200,8 @@ class dnbradio(object):
             .find_element_by_xpath('//a[contains(text(),"Download this mix")]') \
             .click()
 
+        sleep(180)
+
         return
 
     def shutdown(self):
@@ -335,7 +337,7 @@ class dnbforum(object):
 
         return
 
-    def submit_reply(self):
+    def save_edits(self):
         '''
         Submit post to forum thread
         '''
@@ -367,7 +369,7 @@ class dnbforum(object):
 
         self.enter_bbc_code()
 
-        self.submit_reply()
+        self.save_edits()
 
         self.shutdown()
 
@@ -466,7 +468,7 @@ class dogsonacid(object):
 
         return
 
-    def submit_reply(self):
+    def save_edits(self):
         '''
         Submit post to forum thread
         '''
@@ -498,7 +500,7 @@ class dogsonacid(object):
 
         self.enter_bbc_code()
 
-        self.submit_reply()
+        self.save_edits()
 
         self.shutdown()
 
@@ -621,6 +623,8 @@ class mixcloud(object):
             .find_element_by_xpath('''//input[@type='file']''') \
             .send_keys(loc)
 
+        sleep(1)
+
         return
 
     def enter_show_name(self):
@@ -633,6 +637,8 @@ class mixcloud(object):
             .find_element_by_xpath('''//input[@id='cloudcast-name']''') \
             .send_keys('coffee n bass : ' + title)
 
+        sleep(1)
+
         return
 
     def upload(self):
@@ -644,16 +650,16 @@ class mixcloud(object):
             .click()
 
         #Waiting long enough to ensure the file uploaded
-        #sleep(60 * 3)
+        sleep(480)
 
         return
 
-    def initialize_track_list(self):
+    def _initialize_track_list(self):
         '''
         Go to tracklist window and prep it for data entry
         '''
         tlist_window = self.driver \
-                           .find_elements_by_xpath('''//textarea[@class='tracklist-textarea ng-pristine ng-valid']''')
+                           .find_element_by_xpath('''//textarea[@class='tracklist-textarea ng-pristine ng-valid']''')
 
         self.scroll_to_element(tlist_window)
 
@@ -663,7 +669,7 @@ class mixcloud(object):
 
         return
 
-    def prep_track_list(self):
+    def _prep_track_list(self):
         '''
         Clear out the initialization of the tracklist
         '''
@@ -677,23 +683,23 @@ class mixcloud(object):
         '''
         Enter track list for the show
         '''
-        self.initialize_track_list()
+        self._initialize_track_list()
 
-        self.prep_track_list()
+        self._prep_track_list()
 
         for i, trk in enumerate(self.track_list):
             trk = trk.replace('\r\n', '').split(' - ')
 
             if len(trk) > 2:
-                del t[2:]
+                del trk[2:]
 
             if i < len(self.track_list) - 1:
-                t[1] = t[1] + '\n'
+                trk[1] = trk[1] + '\n'
 
             act2 = ActionChains(self.driver)
 
-            act2.send_keys(t[0] + '\t')
-            act2.send_keys(t[1])
+            act2.send_keys(trk[0] + '\t')
+            act2.send_keys(trk[1])
             act2.perform()
 
             del act2
@@ -707,7 +713,7 @@ class mixcloud(object):
         Enter path for show's image
         '''
         self.driver \
-            .find_element_by_name('''//input[@m-file-input-model='cloudcastEdit.picture']''') \
+            .find_element_by_xpath('''//input[@m-file-input-model='cloudcastEdit.picture']''') \
             .send_keys('/Users/danius/Documents/podcast cover 1.JPG')
 
         return
@@ -719,14 +725,16 @@ class mixcloud(object):
         tags = ['Liquid Drum and Bass,',
                 'Drum & Bass,',
                 'Drum and Bass,',
-                'Live,',
                 'Seattle,']
 
         tag_elem = self.driver \
                        .find_element_by_xpath('''//input[@ng-model='newToken']''')
 
         for t in tags:
+            print t
             tag_elem.send_keys(t)
+
+        sleep(1)
 
         return
 
@@ -745,10 +753,11 @@ class mixcloud(object):
         '''
         Save edits made to show page
         '''
+        self.driver \
+            .execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
         element = self.driver \
                       .find_element_by_xpath('''//div[@m-click='save()']''')
-
-        self.scroll_to_element(element)
 
         element.click()
 
