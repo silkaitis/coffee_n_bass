@@ -74,6 +74,9 @@ class dnbradio(object):
         INPUT
             login_pass - username and password, DICT
             trk_list - playlist exported from Rekordbox, LIST
+
+        EXAMPLE
+            dnbradio({'usr':'pswd'}, ['artist1 - track1', 'artist2 - track2', ...])
         '''
         self.user = login_pass.keys()[0]
         self.password = login_pass.values()[0]
@@ -200,7 +203,7 @@ class dnbradio(object):
             .find_element_by_xpath('//a[contains(text(),"Download this mix")]') \
             .click()
 
-        sleep(180)
+        self._sleep_progress(180)
 
         return
 
@@ -214,12 +217,14 @@ class dnbradio(object):
 
     def publish(self):
         '''
-        Update show with track list and image
+        Execute entire workflow to publish show
         '''
+        print('Launch dnbradio driver')
         self.launch()
 
         self.login()
 
+        print('Begin publishing')
         self.goto_archive()
 
         self.goto_latest_show()
@@ -232,19 +237,47 @@ class dnbradio(object):
 
         self.save_edits()
 
+        print('Publishing complete')
         self.goto_archive()
 
         self.goto_latest_show()
 
+        print('Download show')
         self.download_show()
 
         self.fetch_filename()
 
         self.bbc_code()
 
+        print('Shutdown dnbradio driver')
         self.shutdown()
 
         return
+
+        def _sleep_progress(length):
+            '''
+            Input:
+                - length: time in seconds to wait till next API call (INT)
+            Output:
+                - None
+            '''
+            toolbar_width = 40
+
+            # setup toolbar
+            sys.stdout.write("[%s]" % (" " * toolbar_width))
+            sys.stdout.flush()
+            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
+
+            increment = length / float(toolbar_width)
+            for i in xrange(toolbar_width):
+                sleep(increment)
+                # update the bar
+                sys.stdout.write("-")
+                sys.stdout.flush()
+
+            sys.stdout.write("\n")
+
+            return
 
 class dnbforum(object):
 
@@ -359,18 +392,22 @@ class dnbforum(object):
 
     def publish(self):
         '''
-        Post show to forum
+        Execute entire workflow to publish show
         '''
+        print('Launch dnbforum driver')
         self.launch()
 
         self.login()
 
+        print('Begin publishing')
         self.goto_last_page()
 
         self.enter_bbc_code()
 
+        print('Publishing complete')
         self.save_edits()
 
+        print('Shutdown dnbforum driver')
         self.shutdown()
 
         return
@@ -490,18 +527,22 @@ class dogsonacid(object):
 
     def publish(self):
         '''
-        Post show to forum
+        Execute entire workflow to publish show
         '''
+        print('Launch dogsonacid driver')
         self.launch()
 
         self.login()
 
+        print('Begin publishing')
         self.goto_last_page()
 
         self.enter_bbc_code()
 
+        print('Publishing complete')
         self.save_edits()
 
+        print('Shutdown dogsonacid driver')
         self.shutdown()
 
         return
@@ -650,7 +691,7 @@ class mixcloud(object):
             .click()
 
         #Waiting long enough to ensure the file uploaded
-        sleep(480)
+        self._sleep_progress(480)
 
         return
 
@@ -756,10 +797,9 @@ class mixcloud(object):
         self.driver \
             .execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-        element = self.driver \
-                      .find_element_by_xpath('''//div[@m-click='save()']''')
-
-        element.click()
+        self.driver \
+            .find_element_by_xpath('''//div[@m-click='save()']''') \
+            .click()
 
         sleep(5)
 
@@ -775,18 +815,21 @@ class mixcloud(object):
 
     def publish(self):
         '''
-        Publish show with track list, image and tags
+        Execute entire workflow to publish show
         '''
+        print('Launch mixcloud driver')
         self.launch()
 
         self.login()
 
+        print('Beign publishing')
         self.goto_upload_page()
 
         self.select_file()
 
         self.enter_show_name()
 
+        print('Upload show')
         self.upload()
 
         self.enter_show_image()
@@ -795,8 +838,34 @@ class mixcloud(object):
 
         self.enter_track_list()
 
+        print('Publishing complete')
         self.save_edits()
 
+        print('Shutdown mixcloud driver')
         self.shutdown()
 
+        return
+
+    def _sleep_progress(length):
+        '''
+        Input:
+            - length: time in seconds to wait till next API call (INT)
+        Output:
+            - None
+        '''
+        toolbar_width = 40
+
+        # setup toolbar
+        sys.stdout.write("[%s]" % (" " * toolbar_width))
+        sys.stdout.flush()
+        sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
+
+        increment = length / float(toolbar_width)
+        for i in xrange(toolbar_width):
+            sleep(increment)
+            # update the bar
+            sys.stdout.write("-")
+            sys.stdout.flush()
+
+        sys.stdout.write("\n")
         return
