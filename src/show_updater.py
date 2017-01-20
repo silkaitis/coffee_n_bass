@@ -10,11 +10,9 @@ include full path.
 
 Example:
 python show_updater.py my_latest_show.m3u8
-                       ~/Users/jdoe/Pictures/my_show_picture.jpg
 
 INPUT
     my_latest_show.m3u8 - Track list exported from Rekordbox, M3U8
-    ~/Users/jdoe/Pictures/my_show_picture.jpg - Image, JPG
 
 OUTPUT
     None
