@@ -1,4 +1,5 @@
 import yaml
+import sys
 
 from time import sleep
 from selenium import webdriver
@@ -60,7 +61,9 @@ class tracklister(object):
         '''
         self.read_file()
 
-        return(self.read_tracks())
+        self.list = self.read_tracks()
+        
+        return
 
 class dnbradio(object):
     """
@@ -249,35 +252,35 @@ class dnbradio(object):
 
         self.bbc_code()
 
-        print('Shutdown dnbradio driver')
+        print('Shutdown dnbradio driver\n')
         self.shutdown()
 
         return
 
-        def _sleep_progress(length):
-            '''
-            Input:
-                - length: time in seconds to wait till next API call (INT)
-            Output:
-                - None
-            '''
-            toolbar_width = 40
+    def _sleep_progress(self, length):
+        '''
+        Input:
+            - length: time in seconds to wait till next API call (INT)
+        Output:
+            - None
+        '''
+        toolbar_width = 40
 
-            # setup toolbar
-            sys.stdout.write("[%s]" % (" " * toolbar_width))
+        # setup toolbar
+        sys.stdout.write("[%s]" % (" " * toolbar_width))
+        sys.stdout.flush()
+        sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
+
+        increment = length / float(toolbar_width)
+        for i in xrange(toolbar_width):
+            sleep(increment)
+            # update the bar
+            sys.stdout.write("-")
             sys.stdout.flush()
-            sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
 
-            increment = length / float(toolbar_width)
-            for i in xrange(toolbar_width):
-                sleep(increment)
-                # update the bar
-                sys.stdout.write("-")
-                sys.stdout.flush()
+        sys.stdout.write("\n")
 
-            sys.stdout.write("\n")
-
-            return
+        return
 
 class dnbforum(object):
 
@@ -407,7 +410,7 @@ class dnbforum(object):
         print('Publishing complete')
         self.save_edits()
 
-        print('Shutdown dnbforum driver')
+        print('Shutdown dnbforum driver\n')
         self.shutdown()
 
         return
@@ -542,7 +545,7 @@ class dogsonacid(object):
         print('Publishing complete')
         self.save_edits()
 
-        print('Shutdown dogsonacid driver')
+        print('Shutdown dogsonacid driver\n')
         self.shutdown()
 
         return
@@ -598,7 +601,13 @@ class mixcloud(object):
         '''
         INPUT
             login_pass - username and password, DICT
-            raw_playlist - playlist exported from Rekordbox, LIST
+            trk_list - playlist exported from Rekordbox, LIST
+            filename - show filename downloaded from dnbradio, STR
+
+        EXAMPLE
+            mixcloud({'usr' : 'pswd'},
+                     ['artist1 - track1', 'artist2 - track2', ...],
+                     'myshow.mp3')
         '''
         self.user = login_pass.keys()[0]
         self.password = login_pass.values()[0]
@@ -841,12 +850,12 @@ class mixcloud(object):
         print('Publishing complete')
         self.save_edits()
 
-        print('Shutdown mixcloud driver')
+        print('Shutdown mixcloud driver\n')
         self.shutdown()
 
         return
 
-    def _sleep_progress(length):
+    def _sleep_progress(self, length):
         '''
         Input:
             - length: time in seconds to wait till next API call (INT)

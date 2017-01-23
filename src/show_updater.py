@@ -28,12 +28,13 @@ if __name__ == '__main__':
     '''
     Load tracks from show
     '''
-    tracks = tracklister(sys.argv[1])
+    track = tracklister(sys.argv[1])
+    track.build()
 
     '''
     Update DNBRadio
     '''
-    dnbr = dnbradio(dnb_keys.dnbradio, tracks.build())
+    dnbr = dnbradio(dnb_keys.dnbradio, track.list)
     dnbr.publish()
 
     '''
@@ -51,7 +52,7 @@ if __name__ == '__main__':
     '''
     Post to mixcloud
     '''
-    mxcld = mixcloud(dnb_keys.mixcloud, tracks.build(), dnbr.show_filename)
+    mxcld = mixcloud(dnb_keys.mixcloud, track.list, dnbr.show_filename)
     mxcld.publish()
 
     print(dnbr.show_filename + 'successfully published.')
