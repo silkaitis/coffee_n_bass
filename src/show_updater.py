@@ -1,8 +1,7 @@
 import sys
 import yaml
 
-from dnb_classes import tracklister, dnbradio, dnbforum, dogsonacid, site_keys, mixcloud
-from time import sleep
+dfrom time import sleep
 
 '''
 Script requires three inputs from the command line. Image file name must
@@ -55,4 +54,4 @@ if __name__ == '__main__':
     mxcld = mixcloud(dnb_keys.mixcloud, track.list, dnbr.show_filename)
     mxcld.publish()
 
-    print(dnbr.show_filename + 'successfully published.')
+    print(mxcld.title + ' successfully published.')

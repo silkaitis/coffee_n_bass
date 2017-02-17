@@ -62,7 +62,7 @@ class tracklister(object):
         self.read_file()
 
         self.list = self.read_tracks()
-        
+
         return
 
 class dnbradio(object):
@@ -115,6 +115,15 @@ class dnbradio(object):
 
         return
 
+    def scroll_to_element(self, element):
+        '''
+        Scroll till element is within view
+        '''
+        loc = element.location_once_scrolled_into_view
+
+        self.driver \
+            .execute_script("window.scrollTo(0, " + str(loc['y']) + ");")
+
     def goto_archive(self):
         '''
         Go to the archive page
@@ -140,7 +149,12 @@ class dnbradio(object):
         Enter edit page for a show
         '''
         self.driver \
-            .find_element_by_xpath("//a[contains(text(),'edit listing')]") \
+            .execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+        sleep(2)
+
+        self.driver \
+            .find_element_by_xpath("//a[contains(text(),'edit listing1')]") \
             .click()
 
         sleep(1)
@@ -154,6 +168,8 @@ class dnbradio(object):
             .find_element_by_name('frm_tracklist') \
             .send_keys(self.track_list)
 
+        sleep(2)
+
         return
 
     def enter_show_image(self):
@@ -164,6 +180,8 @@ class dnbradio(object):
             .find_element_by_name('frm_picture') \
             .send_keys('/Users/danius/Documents/ritchey_cover_05_-_small_4.jpg')
 
+        sleep(1)
+
         return
 
     def save_edits(self):
@@ -171,10 +189,15 @@ class dnbradio(object):
         Save edits made to show page
         '''
         self.driver \
+            .execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
+        sleep(2)
+
+        self.driver \
             .find_element_by_xpath("//input[@value='Save']") \
             .click()
 
-        sleep(5)
+        sleep(2)
         return
 
     def bbc_code(self):
@@ -631,7 +654,8 @@ class mixcloud(object):
         Log into dnbradio
         '''
         self.driver \
-            .find_element_by_xpath('''//div[@class='user-actions']/a[contains(text(),'Log in')]''') \
+            .find_element_by_xpath('''//div[@class='user-actions']
+                                        /a[contains(text(),'Log in')]''') \
             .click()
 
         sleep(0.5)
@@ -810,7 +834,7 @@ class mixcloud(object):
             .find_element_by_xpath('''//div[@m-click='save()']''') \
             .click()
 
-        sleep(5)
+        sleep(10)
 
         return
 
