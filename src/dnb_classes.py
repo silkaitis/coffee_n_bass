@@ -601,6 +601,8 @@ class site_keys(object):
         self.doa = {self.raw_keys['doa_usr'] : self.raw_keys['doa_pswd']}
 
         self.mixcloud = {self.raw_keys['mcloud_usr'] : self.raw_keys['mcloud_pswd']}
+
+        self.soundcloud = {self.raw_keys['scloud_usr'] : self.raw_keys['scloud_pswd']}
         return
 
     def build(self):
@@ -611,6 +613,296 @@ class site_keys(object):
 
         self.redefine()
 
+        return
+
+class soundcloud(object):
+    """
+    Class to login and publish show to soundcloud
+
+    Note: Sleep is incorporated into appropriate functions to ensure
+            the page is fully loaded before proceeding.
+    """
+    def __init__(self, login_pass, trk_list, filename):
+        '''
+        INPUT
+            login_pass - username and password, DICT
+            trk_list - playlist exported from Rekordbox, LIST
+            filename - show filename downloaded from dnbradio, STR
+
+        EXAMPLE
+            mixcloud({'usr' : 'pswd'},
+                     ['artist1 - track1', 'artist2 - track2', ...],
+                     'myshow.mp3')
+        '''
+        self.user = login_pass.keys()[0]
+        self.password = login_pass.values()[0]
+        self.track_list = trk_list
+        self.show_filename = filename
+        self.url = 'https://soundcloud.com/'
+        self.trk_url = 'https://soundcloud.com/ritchey/tracks'
+
+    def launch(self):
+        '''
+        Launch Chrome webdriver
+        '''
+        self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
+        self.driver.get(self.url)
+
+        sleep(5)
+
+        return
+
+    def login(self):
+        '''
+        Log into soundcloud
+        '''
+        self.driver \
+            .find_elements_by_xpath("//button[@title='Sign in']")[1] \
+            .click()
+
+        sleep(0.5)
+
+        self.driver \
+            .find_element_by_xpath("//input[@id = 'formControl_230']") \
+            .send_keys(self.user)
+
+        self.driver \
+            .find_element_by_xpath("//button[@title='Continue']") \
+            .click()
+
+        self.driver \
+            .find_element_by_xpath("//input[@id = 'formControl_242']") \
+            .send_keys(self.password)
+
+        self.driver \
+            .find_elements_by_xpath("//button[@title='Sign in']")[2] \
+            .click()
+
+        sleep(1)
+
+        return
+
+    def del_previous(self):
+        '''
+        Delete previous show on soundcloud
+        '''
+        self.driver.get(self.trk_url)
+
+        sleep(5)
+
+        self.driver \
+            .find_element_by_xpath("//button[@title='More']") \
+            .click()
+
+        sleep(1)
+
+        self.driver \
+            .find_element_by_xpath("//button[@title='Delete track']") \
+            .click()
+
+        sleep(1)
+
+        self.driver \
+            .find_elements_by_xpath("//button[@type='submit']")[1] \
+            .click()
+
+        sleep(1)
+
+        return
+
+    def goto_upload_page(self):
+        '''
+        Go to upload page
+        '''
+        self.driver \
+            .find_element_by_xpath("//span[@class='uploadButton__title']") \
+            .click()
+
+        sleep(1)
+
+        return
+
+    def select_file(self):
+        '''
+        Select file to upload
+        '''
+        loc = '/Users/danius/Downloads/' + self.show_filename
+
+        self.driver \
+            .find_element_by_xpath("//input[@class='chooseFiles__input sc-visuallyhidden']") \
+            .send_keys(loc)
+
+        self._sleep_progress(240)
+
+        return
+
+    def enter_show_name(self):
+        '''
+        Soundcloud is able to extract show name from the MP3
+        '''
+        print('Method not required, use select_file()')
+        return
+
+    def upload(self):
+        '''
+        Soundcloud begins uploading a file once it's selected
+        '''
+        print('Method not required, use select_file()')
+        return
+
+    def _prep_track_list(self):
+        '''
+        Reconfigure tracklist for input
+        '''
+        trk_list = ''
+
+        for trk in self.track_list:
+            trk_list += trk.replace('\r','')
+
+        return(trk_list)
+
+    def enter_track_list(self):
+        '''
+        Enter track list for show
+        '''
+        self.driver \
+            .find_element_by_xpath("//textarea") \
+            .send_keys(self._prep_track_list(self.track_list))
+
+        sleep(1)
+
+        return
+
+    def enter_show_image(self):
+        '''
+        Select image for show
+        '''
+        self.driver \
+            .find_element_by_xpath("//input[@class='imageChooser__fileInput sc-visuallyhidden']") \
+            .send_keys('/Users/danius/Documents/podcast cover 1.JPG')
+
+        sleep(1)
+
+        return
+
+    def add_tags(self):
+        '''
+        Add tags and genre
+        '''
+        self.driver \
+            .find_element_by_xpath("//div[@class='select__wrapper']") \
+            .click()
+
+        sleep(1)
+
+        self.driver \
+            .find_element_by_xpath("//a[contains(text(),'Drum & Bass')]") \
+            .click()
+
+        sleep(1)
+
+        for tag in ['Liquid\t', 'Seattle\t']:
+
+            self.driver \
+                .find_element_by_xpath("//input[@id='tokenInput__tags']") \
+                .send_keys(tag)
+
+            sleep(0.5)
+
+        return
+
+    def change_permissions(self):
+        '''
+        Make the show downloadable
+        '''
+        self.driver \
+            .find_element_by_xpath("//a[contains(text(), 'Permissions')]") \
+            .click()
+
+        sleep(1)
+
+        self.driver \
+            .find_element_by_xpath("//label[contains(text(),'Enable downloads')]") \
+            .click()
+
+        sleep(0.5)
+
+        return
+
+    def save_edits(self):
+        '''
+        Save show changes
+        '''
+        self.driver \
+            .find_element_by_xpath("//button[@title='Save']") \
+            .click()
+
+        sleep(5)
+
+        return
+
+    def shutdown(self):
+        '''
+        Close Chrome webdriver
+        '''
+        self.driver.close()
+
+        return
+
+    def publish(self):
+        '''
+        Execute entire workflow to publish show
+        '''
+        print('Launch soundcloud driver')
+        self.launch()
+
+        self.login()
+
+        print('Remove previous show')
+        self.del_previous()
+
+        print('Beign publishing')
+        self.goto_upload_page()
+
+        self.select_file()
+        print('Upload show')
+
+        self.enter_show_image()
+
+        self.add_tags()
+
+        self.enter_track_list()
+
+        print('Publishing complete')
+        self.save_edits()
+
+        print('Shutdown soundcloud driver\n')
+        self.shutdown()
+
+        return
+
+    def _sleep_progress(self, length):
+        '''
+        Input:
+            - length: time in seconds to wait till next API call (INT)
+        Output:
+            - None
+        '''
+        toolbar_width = 40
+
+        # setup toolbar
+        sys.stdout.write("[%s]" % (" " * toolbar_width))
+        sys.stdout.flush()
+        sys.stdout.write("\b" * (toolbar_width+1)) # return to start of line, after '['
+
+        increment = length / float(toolbar_width)
+        for i in xrange(toolbar_width):
+            sleep(increment)
+            # update the bar
+            sys.stdout.write("-")
+            sys.stdout.flush()
+
+        sys.stdout.write("\n")
         return
 
 class mixcloud(object):
@@ -705,11 +997,11 @@ class mixcloud(object):
         '''
         Enter show name
         '''
-        title = self.show_filename.split('_-_')[-1].replace('.mp3', '')
+        self.title = self.show_filename.split('_-_')[-1].replace('.mp3', '')
 
         self.driver \
             .find_element_by_xpath('''//input[@id='cloudcast-name']''') \
-            .send_keys('coffee n bass : ' + title)
+            .send_keys('coffee n bass : ' + self.title)
 
         sleep(1)
 
@@ -724,7 +1016,7 @@ class mixcloud(object):
             .click()
 
         #Waiting long enough to ensure the file uploaded
-        self._sleep_progress(480)
+        self._sleep_progress(240)
 
         return
 
@@ -773,12 +1065,15 @@ class mixcloud(object):
             act2 = ActionChains(self.driver)
 
             act2.send_keys(trk[0] + '\t')
+
+            sleep(1)
+
             act2.send_keys(trk[1])
             act2.perform()
 
             del act2
 
-            sleep(0.5)
+            sleep(1)
 
         return
 
@@ -789,6 +1084,8 @@ class mixcloud(object):
         self.driver \
             .find_element_by_xpath('''//input[@m-file-input-model='cloudcastEdit.picture']''') \
             .send_keys('/Users/danius/Documents/podcast cover 1.JPG')
+
+        sleep(1)
 
         return
 
@@ -803,10 +1100,12 @@ class mixcloud(object):
 
         tag_elem = self.driver \
                        .find_element_by_xpath('''//input[@ng-model='newToken']''')
-
+        print('Adding Tags:')
         for t in tags:
             print t
             tag_elem.send_keys(t)
+
+            sleep(0.5)
 
         sleep(1)
 
@@ -834,7 +1133,7 @@ class mixcloud(object):
             .find_element_by_xpath('''//div[@m-click='save()']''') \
             .click()
 
-        sleep(10)
+        sleep(20)
 
         return
 

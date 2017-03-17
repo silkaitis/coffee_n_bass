@@ -1,7 +1,8 @@
 import sys
 import yaml
 
-dfrom time import sleep
+from time import sleep
+from dnb_classes import site_keys, tracklister, dnbradio, dnbforum, dogsonacid, mixcloud, soundcloud
 
 '''
 Script requires three inputs from the command line. Image file name must
@@ -29,6 +30,7 @@ if __name__ == '__main__':
     '''
     track = tracklister(sys.argv[1])
     track.build()
+    import pdb; pdb.set_trace()
 
     '''
     Update DNBRadio
@@ -53,5 +55,11 @@ if __name__ == '__main__':
     '''
     mxcld = mixcloud(dnb_keys.mixcloud, track.list, dnbr.show_filename)
     mxcld.publish()
+
+    '''
+    Post to soundcloud
+    '''
+    sdcld = soundcloud(dnb_keys.soundcloud, track.list, dnbr.show_filename)
+    sdcld.publish()
 
     print(mxcld.title + ' successfully published.')
