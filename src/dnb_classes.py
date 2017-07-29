@@ -1,9 +1,73 @@
-import yaml
-import sys
+import yaml, sys, os, random
 
 from time import sleep
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
+
+class bmills_selecta(object):
+    '''
+    Class to randomly select bmills photo
+    '''
+
+    def __init__(self):
+        self.art_location = '/Users/danius/Documents/Github/coffee_n_bass/cover_art/'
+        self.log = '/Users/danius/Documents/Github/coffee_n_bass/src/art.log'
+
+    def _load(self):
+        '''
+        Load log of previously used artwork
+        '''
+        with open(self.log, 'r') as f:
+            data = [val.replace(',','').replace('\n','') for val in f.readlines()]
+        return(set(data))
+
+    def _read(self):
+        '''
+        Read files
+        '''
+        return(set(os.listdir(self.art_location + 'other/')))
+
+    def _reset_log(self):
+        '''
+        Clear out log after all files are used
+        '''
+        f = open(self.log, 'w')
+        f.close()
+
+    def _add_to_log(self, file):
+        '''
+        Add to log
+        '''
+        with open(self.log, 'a') as f:
+            f.write(file + ',\n')
+
+    def pick(self):
+        '''
+        Pick cover for publishing
+        '''
+        files = self._read()
+        used = self._load()
+
+        if files == used:
+            self._reset_log()
+            return(random.sample(files, 1)[0])
+        else:
+            return(random.sample(files - used, 1)[0])
+
+    def deliver(self):
+        '''
+        Return file paths and add file to log
+        '''
+        art = self.pick()
+
+        print art
+
+        self._add_to_log(art)
+
+        dnbradio = self.art_location + 'dnbradio/' + art
+        other = self.art_location + 'other/' + art
+
+        return(dnbradio, other)
 
 class tracklister(object):
     '''
@@ -72,11 +136,12 @@ class dnbradio(object):
     Note: Sleep is incorporated into appropriate functions to ensure
             the page is fully loaded before proceeding.
     """
-    def __init__(self, login_pass, trk_list):
+    def __init__(self, login_pass, trk_list, art_file):
         '''
         INPUT
             login_pass - username and password, DICT
             trk_list - playlist exported from Rekordbox, LIST
+            art_file - file path to cover art, STR
 
         EXAMPLE
             dnbradio({'usr':'pswd'}, ['artist1 - track1', 'artist2 - track2', ...])
@@ -85,6 +150,7 @@ class dnbradio(object):
         self.password = login_pass.values()[0]
         self.track_list = trk_list
         self.url = 'https://dnbradio.com/?event=login'
+        self.art = art_file
 
     def launch(self):
         '''
@@ -129,7 +195,8 @@ class dnbradio(object):
         Go to the archive page
         '''
         self.driver \
-            .find_element_by_link_text('archives').click()
+            .get('https://dnbradio.com/podcast/ritchey')
+            # .find_element_by_link_text('archives').click()
 
         return
 
@@ -137,6 +204,9 @@ class dnbradio(object):
         '''
         Go to most recent show page
         '''
+        self.driver \
+            .execute_script("window.scrollTo(0, document.body.scrollHeight);")
+
         self.driver \
             .find_element_by_xpath("//a[@class='showLink'][contains(text(),'coffee n bass')]") \
             .click()
@@ -168,7 +238,7 @@ class dnbradio(object):
             .find_element_by_name('frm_tracklist') \
             .send_keys(self.track_list)
 
-        sleep(2)
+        sleep(5)
 
         return
 
@@ -178,7 +248,7 @@ class dnbradio(object):
         '''
         self.driver \
             .find_element_by_name('frm_picture') \
-            .send_keys('/Users/danius/Documents/ritchey_cover_05_-_small_4.jpg')
+            .send_keys(self.art)
 
         sleep(1)
 
@@ -279,6 +349,20 @@ class dnbradio(object):
         self.shutdown()
 
         return
+
+    def refetch_filename(self):
+        self.launch()
+
+        self.goto_archive()
+
+        self.goto_latest_show()
+
+        self.fetch_filename()
+
+        self.shutdown()
+
+        return
+
 
     def _sleep_progress(self, length):
         '''
@@ -622,12 +706,13 @@ class soundcloud(object):
     Note: Sleep is incorporated into appropriate functions to ensure
             the page is fully loaded before proceeding.
     """
-    def __init__(self, login_pass, trk_list, filename):
+    def __init__(self, login_pass, trk_list, filename, art_file):
         '''
         INPUT
             login_pass - username and password, DICT
             trk_list - playlist exported from Rekordbox, LIST
             filename - show filename downloaded from dnbradio, STR
+            art_file - file path to cover art, STR
 
         EXAMPLE
             mixcloud({'usr' : 'pswd'},
@@ -640,6 +725,14 @@ class soundcloud(object):
         self.show_filename = filename
         self.url = 'https://soundcloud.com/'
         self.trk_url = 'https://soundcloud.com/ritchey/tracks'
+        self.art = art_file
+
+    def _rand_sleep(self):
+        '''
+        Sleep for random amount of time
+        '''
+        sleep(random.randint(5,15))
+        return
 
     def launch(self):
         '''
@@ -648,7 +741,7 @@ class soundcloud(object):
         self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
         self.driver.get(self.url)
 
-        sleep(5)
+        self._rand_sleep()
 
         return
 
@@ -660,25 +753,25 @@ class soundcloud(object):
             .find_elements_by_xpath("//button[@title='Sign in']")[1] \
             .click()
 
-        sleep(0.5)
+        self._rand_sleep()
 
-        self.driver \
-            .find_element_by_xpath("//input[@id = 'formControl_230']") \
-            .send_keys(self.user)
+        self.type_at_cursor(self.user)
 
         self.driver \
             .find_element_by_xpath("//button[@title='Continue']") \
             .click()
 
-        self.driver \
-            .find_element_by_xpath("//input[@id = 'formControl_242']") \
-            .send_keys(self.password)
+        self._rand_sleep()
+
+        self.type_at_cursor(self.password)
 
         self.driver \
-            .find_elements_by_xpath("//button[@title='Sign in']")[2] \
+            .find_elements_by_xpath("//button[@title='Sign In']")[3] \
             .click()
 
-        sleep(1)
+        # "//button[@title='Sign in']"
+
+        self._rand_sleep()
 
         return
 
@@ -688,25 +781,25 @@ class soundcloud(object):
         '''
         self.driver.get(self.trk_url)
 
-        sleep(5)
+        self._rand_sleep()
 
         self.driver \
             .find_element_by_xpath("//button[@title='More']") \
             .click()
 
-        sleep(1)
+        self._rand_sleep()
 
         self.driver \
             .find_element_by_xpath("//button[@title='Delete track']") \
             .click()
 
-        sleep(1)
+        self._rand_sleep()
 
         self.driver \
             .find_elements_by_xpath("//button[@type='submit']")[1] \
             .click()
 
-        sleep(1)
+        self._rand_sleep()
 
         return
 
@@ -718,7 +811,7 @@ class soundcloud(object):
             .find_element_by_xpath("//span[@class='uploadButton__title']") \
             .click()
 
-        sleep(1)
+        self._rand_sleep()
 
         return
 
@@ -767,9 +860,9 @@ class soundcloud(object):
         '''
         self.driver \
             .find_element_by_xpath("//textarea") \
-            .send_keys(self._prep_track_list(self.track_list))
+            .send_keys(self._prep_track_list())
 
-        sleep(1)
+        self._rand_sleep()
 
         return
 
@@ -779,9 +872,9 @@ class soundcloud(object):
         '''
         self.driver \
             .find_element_by_xpath("//input[@class='imageChooser__fileInput sc-visuallyhidden']") \
-            .send_keys('/Users/danius/Documents/podcast cover 1.JPG')
+            .send_keys(self.art)
 
-        sleep(1)
+        self._rand_sleep()
 
         return
 
@@ -793,13 +886,13 @@ class soundcloud(object):
             .find_element_by_xpath("//div[@class='select__wrapper']") \
             .click()
 
-        sleep(1)
+        self._rand_sleep()
 
         self.driver \
             .find_element_by_xpath("//a[contains(text(),'Drum & Bass')]") \
             .click()
 
-        sleep(1)
+        self._rand_sleep()
 
         for tag in ['Liquid\t', 'Seattle\t']:
 
@@ -807,7 +900,7 @@ class soundcloud(object):
                 .find_element_by_xpath("//input[@id='tokenInput__tags']") \
                 .send_keys(tag)
 
-            sleep(0.5)
+            self._rand_sleep()
 
         return
 
@@ -819,13 +912,13 @@ class soundcloud(object):
             .find_element_by_xpath("//a[contains(text(), 'Permissions')]") \
             .click()
 
-        sleep(1)
+        self._rand_sleep()
 
         self.driver \
             .find_element_by_xpath("//label[contains(text(),'Enable downloads')]") \
             .click()
 
-        sleep(0.5)
+        self._rand_sleep()
 
         return
 
@@ -837,7 +930,7 @@ class soundcloud(object):
             .find_element_by_xpath("//button[@title='Save']") \
             .click()
 
-        sleep(5)
+        self._rand_sleep()
 
         return
 
@@ -861,6 +954,8 @@ class soundcloud(object):
         print('Remove previous show')
         self.del_previous()
 
+        self._rand_sleep()
+
         print('Beign publishing')
         self.goto_upload_page()
 
@@ -873,6 +968,8 @@ class soundcloud(object):
 
         self.enter_track_list()
 
+        self.change_permissions()
+
         print('Publishing complete')
         self.save_edits()
 
@@ -880,6 +977,23 @@ class soundcloud(object):
         self.shutdown()
 
         return
+
+    def type_at_cursor(self, text):
+        '''
+        Enter text at the cursor location
+        '''
+        act = ActionChains(self.driver)
+
+        act.send_keys(text)
+
+        self._rand_sleep()
+
+        act.perform()
+
+        del act
+
+        return
+
 
     def _sleep_progress(self, length):
         '''
@@ -912,12 +1026,13 @@ class mixcloud(object):
     Note: Sleep is incorporated into appropriate functions to ensure
             the page is fully loaded before proceeding.
     """
-    def __init__(self, login_pass, trk_list, filename):
+    def __init__(self, login_pass, trk_list, filename, art_file):
         '''
         INPUT
             login_pass - username and password, DICT
             trk_list - playlist exported from Rekordbox, LIST
             filename - show filename downloaded from dnbradio, STR
+            art_file - file path to cover art, STR
 
         EXAMPLE
             mixcloud({'usr' : 'pswd'},
@@ -929,6 +1044,7 @@ class mixcloud(object):
         self.track_list = trk_list
         self.show_filename = filename
         self.url = 'http://www.mixcloud.com/'
+        self.art = art_file
 
     def launch(self):
         '''
@@ -945,12 +1061,18 @@ class mixcloud(object):
         '''
         Log into dnbradio
         '''
-        self.driver \
-            .find_element_by_xpath('''//div[@class='user-actions']
-                                        /a[contains(text(),'Log in')]''') \
-            .click()
+        self.driver.get('http://www.mixcloud.com/settings/')
 
-        sleep(0.5)
+        self.driver \
+            .find_element_by_xpath("//a[contains(text(), 'Login')]") \
+            .click()
+        #
+        # self.driver \
+        #     .find_element_by_xpath('''//div[@class='user-actions']
+        #                                 /a[contains(text(),'Log in')]''') \
+        #     .click()
+        #
+        # sleep(0.5)
 
         self.driver \
             .find_element_by_xpath('''//input[@ng-model='formData.email']''') \
@@ -1016,7 +1138,7 @@ class mixcloud(object):
             .click()
 
         #Waiting long enough to ensure the file uploaded
-        self._sleep_progress(240)
+        self._sleep_progress(360)
 
         return
 
@@ -1083,7 +1205,7 @@ class mixcloud(object):
         '''
         self.driver \
             .find_element_by_xpath('''//input[@m-file-input-model='cloudcastEdit.picture']''') \
-            .send_keys('/Users/danius/Documents/podcast cover 1.JPG')
+            .send_keys(self.art)
 
         sleep(1)
 
@@ -1126,6 +1248,8 @@ class mixcloud(object):
         '''
         Save edits made to show page
         '''
+        sleep(1)
+
         self.driver \
             .execute_script("window.scrollTo(0, document.body.scrollHeight);")
 

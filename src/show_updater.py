@@ -2,11 +2,10 @@ import sys
 import yaml
 
 from time import sleep
-from dnb_classes import site_keys, tracklister, dnbradio, dnbforum, dogsonacid, mixcloud, soundcloud
+from dnb_classes import site_keys,tracklister, dnbradio, dnbforum, dogsonacid, mixcloud, soundcloud, bmills_selecta
 
 '''
-Script requires three inputs from the command line. Image file name must
-include full path.
+Script requires one input from the command line.
 
 Example:
 python show_updater.py my_latest_show.m3u8
@@ -20,6 +19,12 @@ OUTPUT
 
 if __name__ == '__main__':
     '''
+    Pick artwork
+    '''
+    art = bmills_selecta()
+    dnbr_art, cld_art = art.deliver()
+
+    '''
     Load credentials
     '''
     dnb_keys = site_keys('/Users/danius/Documents/Github/coffee_n_bass/src/usr_pswd.yaml')
@@ -30,12 +35,11 @@ if __name__ == '__main__':
     '''
     track = tracklister(sys.argv[1])
     track.build()
-    import pdb; pdb.set_trace()
 
     '''
     Update DNBRadio
     '''
-    dnbr = dnbradio(dnb_keys.dnbradio, track.list)
+    dnbr = dnbradio(dnb_keys.dnbradio, track.list, dnbr_art)
     dnbr.publish()
 
     '''
@@ -53,13 +57,13 @@ if __name__ == '__main__':
     '''
     Post to mixcloud
     '''
-    mxcld = mixcloud(dnb_keys.mixcloud, track.list, dnbr.show_filename)
+    mxcld = mixcloud(dnb_keys.mixcloud, track.list, dnbr.show_filename, cld_art)
     mxcld.publish()
 
-    '''
-    Post to soundcloud
-    '''
-    sdcld = soundcloud(dnb_keys.soundcloud, track.list, dnbr.show_filename)
+    # '''
+    # Post to soundcloud
+    # '''
+    sdcld = soundcloud(dnb_keys.soundcloud, track.list, dnbr.show_filename, cld_art)
     sdcld.publish()
 
     print(mxcld.title + ' successfully published.')
