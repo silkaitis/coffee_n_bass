@@ -27,7 +27,7 @@ if __name__ == '__main__':
     '''
     Load credentials
     '''
-    dnb_keys = site_keys('/Users/danius/Documents/Github/coffee_n_bass/src/usr_pswd.yaml')
+    dnb_keys = site_keys('/Users/slice/Documents/Github/coffee_n_bass/src/usr_pswd.yaml')
     dnb_keys.build()
 
     '''

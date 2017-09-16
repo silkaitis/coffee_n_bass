@@ -10,8 +10,8 @@ class bmills_selecta(object):
     '''
 
     def __init__(self):
-        self.art_location = '/Users/danius/Documents/Github/coffee_n_bass/cover_art/'
-        self.log = '/Users/danius/Documents/Github/coffee_n_bass/src/art.log'
+        self.art_location = '/Users/slice/Documents/Github/coffee_n_bass/cover_art/'
+        self.log = '/Users/slice/Documents/Github/coffee_n_bass/src/art.log'
 
     def _load(self):
         '''
@@ -156,7 +156,7 @@ class dnbradio(object):
         '''
         Launch Chrome webdriver
         '''
-        self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
+        self.driver = webdriver.Chrome('/Users/slice/Documents/Github/chromedriver')
         self.driver.get(self.url)
 
         sleep(5)
@@ -350,6 +350,17 @@ class dnbradio(object):
 
         return
 
+    def reload(self):
+        self.launch()
+        self.login()
+        self.goto_archive()
+        self.goto_latest_show()
+        self.fetch_filename()
+        self.bbc_code()
+        self.shutdown()
+        return
+
+
     def refetch_filename(self):
         self.launch()
 
@@ -406,7 +417,7 @@ class dnbforum(object):
         '''
         Launch Chrome webdriver
         '''
-        self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
+        self.driver = webdriver.Chrome('/Users/slice/Documents/Github/chromedriver')
         self.driver.get(self.url)
 
         sleep(5)
@@ -539,7 +550,7 @@ class dogsonacid(object):
         '''
         Launch Chrome webdriver
         '''
-        self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
+        self.driver = webdriver.Chrome('/Users/slice/Documents/Github/chromedriver')
         self.driver.get(self.url)
 
         sleep(5)
@@ -738,7 +749,7 @@ class soundcloud(object):
         '''
         Launch Chrome webdriver
         '''
-        self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
+        self.driver = webdriver.Chrome('/Users/slice/Documents/Github/chromedriver')
         self.driver.get(self.url)
 
         self._rand_sleep()
@@ -766,7 +777,7 @@ class soundcloud(object):
         self.type_at_cursor(self.password)
 
         self.driver \
-            .find_elements_by_xpath("//button[@title='Sign In']")[3] \
+            .find_elements_by_xpath("//button[@title='Sign in']")[3] \
             .click()
 
         # "//button[@title='Sign in']"
@@ -819,7 +830,7 @@ class soundcloud(object):
         '''
         Select file to upload
         '''
-        loc = '/Users/danius/Downloads/' + self.show_filename
+        loc = '/Users/slice/Downloads/' + self.show_filename
 
         self.driver \
             .find_element_by_xpath("//input[@class='chooseFiles__input sc-visuallyhidden']") \
@@ -833,7 +844,14 @@ class soundcloud(object):
         '''
         Soundcloud is able to extract show name from the MP3
         '''
-        print('Method not required, use select_file()')
+        self.title = self.show_filename.split('_-_')[-1].replace('.mp3', '')
+
+        self.driver \
+            .find_element_by_xpath("//input[@placeholder = 'Name your track']") \
+            .send_keys('coffee n bass : {}'.format(self.title))
+
+        self._rand_sleep()
+
         return
 
     def upload(self):
@@ -920,6 +938,12 @@ class soundcloud(object):
 
         self._rand_sleep()
 
+        self.driver \
+            .find_element_by_xpath("//label[contains(text(), 'Include in RSS feed')]") \
+            .click()
+
+        self._rand_sleep()
+
         return
 
     def save_edits(self):
@@ -963,6 +987,8 @@ class soundcloud(object):
         print('Upload show')
 
         self.enter_show_image()
+
+        self.enter_show_name()
 
         self.add_tags()
 
@@ -1050,11 +1076,18 @@ class mixcloud(object):
         '''
         Launch Chrome webdriver
         '''
-        self.driver = webdriver.Chrome('/Users/danius/anaconda2/selenium/webdriver/chromedriver')
+        self.driver = webdriver.Chrome('/Users/slice/Documents/Github/chromedriver')
         self.driver.get(self.url)
 
-        sleep(5)
+        self._rand_sleep()
 
+        return
+
+    def _rand_sleep(self):
+        '''
+        Sleep for random amount of time
+        '''
+        sleep(random.randint(5,15))
         return
 
     def login(self):
@@ -1064,29 +1097,26 @@ class mixcloud(object):
         self.driver.get('http://www.mixcloud.com/settings/')
 
         self.driver \
-            .find_element_by_xpath("//a[contains(text(), 'Login')]") \
+            .find_element_by_xpath("//span[contains(text(), 'Log in')]") \
             .click()
-        #
-        # self.driver \
-        #     .find_element_by_xpath('''//div[@class='user-actions']
-        #                                 /a[contains(text(),'Log in')]''') \
-        #     .click()
-        #
-        # sleep(0.5)
+
+        self._rand_sleep()
 
         self.driver \
-            .find_element_by_xpath('''//input[@ng-model='formData.email']''') \
+            .find_element_by_xpath("//input[@name = 'email']") \
             .send_keys(self.user)
 
+        self._rand_sleep()
+
         self.driver \
-            .find_element_by_xpath('''//input[@type='password']''') \
+            .find_element_by_xpath("input[@name = 'password']") \
             .send_keys(self.password)
+
+        self._rand_sleep()
 
         self.driver \
             .find_element_by_xpath('''//button[@class='btn btn-big btn-secondary']''') \
             .click()
-
-        sleep(1)
 
         return
 
@@ -1098,20 +1128,20 @@ class mixcloud(object):
             .find_element_by_xpath('''//a[@href='/upload/']''') \
             .click()
 
-        sleep(1)
+        self._rand_sleep()
         return
 
     def select_file(self):
         '''
         Select file to upload
         '''
-        loc = '/Users/danius/Downloads/' + self.show_filename
+        loc = '/Users/slice/Downloads/' + self.show_filename
 
         self.driver \
             .find_element_by_xpath('''//input[@type='file']''') \
             .send_keys(loc)
 
-        sleep(1)
+        self._rand_sleep()
 
         return
 
@@ -1122,10 +1152,10 @@ class mixcloud(object):
         self.title = self.show_filename.split('_-_')[-1].replace('.mp3', '')
 
         self.driver \
-            .find_element_by_xpath('''//input[@id='cloudcast-name']''') \
+            .find_element_by_xpath('''//input[@placeholder = 'Choose a title for your upload']''') \
             .send_keys('coffee n bass : ' + self.title)
 
-        sleep(1)
+        self._rand_sleep()
 
         return
 
@@ -1134,7 +1164,7 @@ class mixcloud(object):
         Upload file
         '''
         self.driver \
-            .find_element_by_xpath('''//div[@m-click='upload.submit()']''') \
+            .find_element_by_xpath('''//div[contains(text(), 'Upload')]''') \
             .click()
 
         #Waiting long enough to ensure the file uploaded
@@ -1162,7 +1192,7 @@ class mixcloud(object):
         Clear out the initialization of the tracklist
         '''
         self.driver \
-            .find_element_by_xpath('''//textarea[@m-field-type='artist']''') \
+            .find_element_by_xpath('''//textarea[@class = 'tracklist-textarea']''') \
             .clear()
 
         return
@@ -1171,7 +1201,7 @@ class mixcloud(object):
         '''
         Enter track list for the show
         '''
-        self._initialize_track_list()
+        # self._initialize_track_list()
 
         self._prep_track_list()
 
@@ -1188,14 +1218,14 @@ class mixcloud(object):
 
             act2.send_keys(trk[0] + '\t')
 
-            sleep(1)
+            self._rand_sleep()
 
             act2.send_keys(trk[1])
             act2.perform()
 
             del act2
 
-            sleep(1)
+            self._rand_sleep()
 
         return
 
@@ -1204,10 +1234,10 @@ class mixcloud(object):
         Enter path for show's image
         '''
         self.driver \
-            .find_element_by_xpath('''//input[@m-file-input-model='cloudcastEdit.picture']''') \
+            .find_element_by_xpath('''//input[@name = 'picture']''') \
             .send_keys(self.art)
 
-        sleep(1)
+        self._rand_sleep()
 
         return
 
@@ -1221,15 +1251,15 @@ class mixcloud(object):
                 'Seattle,']
 
         tag_elem = self.driver \
-                       .find_element_by_xpath('''//input[@ng-model='newToken']''')
+                       .find_element_by_xpath('''//input[@class = 'new-token-input left']''')
         print('Adding Tags:')
         for t in tags:
             print t
             tag_elem.send_keys(t)
 
-            sleep(0.5)
+            sleep(1)
 
-        sleep(1)
+        self._rand_sleep()
 
         return
 
@@ -1248,7 +1278,7 @@ class mixcloud(object):
         '''
         Save edits made to show page
         '''
-        sleep(1)
+        self._rand_sleep()
 
         self.driver \
             .execute_script("window.scrollTo(0, document.body.scrollHeight);")
